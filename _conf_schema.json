@@ -1,0 +1,115 @@
+{
+    "network_config": {
+        "description": "网络请求设置",
+        "type": "object",
+        "hint": "在这里设置网络请求相关参数。",
+        "items": {
+            "per_page": {
+                "description": "单次检查数量",
+                "type": "int",
+                "hint": "每次检查更新时获取的文章数量。建议设置在 5-10 之间，避免请求过多导致响应缓慢。",
+                "default": 5
+            },
+            "interval": {
+                "description": "发送间隔(秒)",
+                "type": "int",
+                "hint": "连续发送多条消息时的缓冲间隔，防止被风控。建议 2-5 秒。",
+                "default": 2
+            }
+        }
+    },
+    "display_config": {
+        "description": "展示与发送设置",
+        "type": "object",
+        "hint": "设置文章的展示样式及发送行为。",
+        "items": {
+            "show_thumbnail": {
+                "description": "显示缩略图",
+                "type": "bool",
+                "default": true,
+                "hint": "是否在推送卡片中显示文章封面图。"
+            },
+            "show_excerpt": {
+                "description": "显示摘要",
+                "type": "bool",
+                "default": true,
+                "hint": "是否显示文章的简短摘要（会自动翻译为中文）。"
+            },
+            "show_author": {
+                "description": "显示作者",
+                "type": "bool",
+                "default": true,
+                "hint": "是否显示作者名称及头像。"
+            },
+            "fold": {
+                "description": "合并转发阈值",
+                "type": "int",
+                "default": 2,
+                "hint": "当单次更新的文章数量 > 此值时，自动折叠为合并转发消息。例如设为 1，则只要超过 1 篇就折叠。仅支持 OneBot 协议。"
+            }
+        }
+    },
+    "monitor_config": {
+        "description": "自动监控设置",
+        "type": "object",
+        "hint": "设置定时自动检查更新。",
+        "items": {
+            "enabled": {
+                "description": "开启监控",
+                "type": "bool",
+                "default": false,
+                "hint": "开启后将定时检查新文章。请务必配置下方的【接收者设置】。"
+            },
+            "receiver": {
+                "description": "接收者设置",
+                "type": "object",
+                "hint": "指定自动推送的目标（仅支持 OneBot 协议）。",
+                "items": {
+                    "groups": {
+                        "description": "推送到群聊",
+                        "type": "list",
+                        "hint": "点击“添加更多”输入群号，支持推送到多个群。"
+                    },
+                    "users": {
+                        "description": "推送到私聊",
+                        "type": "list",
+                        "hint": "点击“添加更多”输入 QQ 号，支持推送到多个人。"
+                    }
+                }
+            },
+            "interval": {
+                "description": "检查周期(秒)",
+                "type": "int",
+                "default": 300,
+                "hint": "每隔多少秒检查一次新文章。建议不低于 300 秒（5分钟）。"
+            }
+        }
+    },
+    "filter_config": {
+        "description": "内容过滤器",
+        "type": "object",
+        "hint": "设置过滤规则。某项留空则表示该项不做限制。",
+        "items": {
+            "keywords": {
+                "description": "包含关键词",
+                "type": "list",
+                "hint": "文章标题或摘要中包含列表中任意一个词即推送。留空则不限制。"
+            },
+            "exclude_keywords": {
+                "description": "排除关键词",
+                "type": "list",
+                "hint": "文章标题或摘要中包含列表中任意一个词则【直接屏蔽】。"
+            },
+            "categories": {
+                "description": "包含分类(Tags)",
+                "type": "list",
+                "hint": "只看这些分类的文章。如 'Unreal Engine'。留空则不限制。"
+            },
+            "exclude_categories": {
+                "description": "排除分类(Tags)",
+                "type": "list",
+                "hint": "不看这些分类。如 'AI', 'Crypto'。只要文章包含列表中任意一个标签则【直接屏蔽】。"
+            }
+        }
+    }
+}
