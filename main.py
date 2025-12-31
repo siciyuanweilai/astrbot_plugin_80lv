@@ -186,7 +186,7 @@ Excerpt: {clean_excerpt}
         """
         过滤文章逻辑：
         1. 排除关键词
-        2. 排除分类标签 (新增)
+        2. 排除分类标签
         3. 包含关键词
         4. 包含分类标签
         """
@@ -194,14 +194,13 @@ Excerpt: {clean_excerpt}
         desc = art.get("excerpt", "")
         cats = art.get("categories", [])
         
-        # 排除关键词 (Title/Excerpt)
+        # 排除关键词
         if self.filter_exclude:
             if any(k.lower() in title.lower() or k.lower() in desc.lower() for k in self.filter_exclude):
                 return False
 
-        # 排除分类 (Exclude Categories) - 优先级高
+        # 排除分类 - 优先级高
         if self.filter_exclude_categories:
-            # 转换为小写集合以便比较
             config_exclude_set = {str(c).lower().strip() for c in self.filter_exclude_categories if c}
             article_cats_set = {str(c).lower().strip() for c in cats if c}
             
@@ -209,22 +208,20 @@ Excerpt: {clean_excerpt}
             if config_exclude_set & article_cats_set:
                 return False
         
-        # 3. 包含关键词 (Title/Excerpt)
-        match_keyword = True # 默认为True，如果没有设置关键词则不进行此项过滤
+        # 包含关键词
+        match_keyword = True
         if self.filter_keywords:
             match_keyword = any(k.lower() in title.lower() or k.lower() in desc.lower() for k in self.filter_keywords)
         
-        # 4. 包含分类 (Tags)
-        match_category = True # 默认为True
+        # 包含分类
+        match_category = True
         if self.filter_categories:
             config_cats_set = {str(c).lower().strip() for c in self.filter_categories if c}
             article_cats_set = {str(c).lower().strip() for c in cats if c}
-            # 如果没有交集，说明不满足分类要求
             if not (config_cats_set & article_cats_set):
                 match_category = False
                 
-        # 逻辑判断：
-        # 如果关键词和分类都设置了，必须同时满足 (AND)
+        # 如果关键词和分类都设置了，必须同时满足
         if self.filter_keywords and self.filter_categories:
             return match_keyword and match_category
         
@@ -243,9 +240,8 @@ Excerpt: {clean_excerpt}
         """构建单篇文章的消息组件列表"""
         
         raw_date = art.get("date", "")
-        date_str = str(raw_date) # 默认直接转字符串，作为兜底
+        date_str = str(raw_date) 
 
-        # 仅解析 API 目前返回的特定字符串格式
         try:
             # %d = 日(29), %B = 月份全称(December), %Y = 年(2025)
             # 解析成功后格式化为: 2025-12-29
@@ -265,7 +261,6 @@ Excerpt: {clean_excerpt}
         }
 
         try:
-            # 使用默认宽屏渲染
             img_url = await self.html_render(TMPL, render_data)
             
             url = self.spider.build_article_url(art.get("slug", ""))
@@ -349,19 +344,17 @@ Excerpt: {clean_excerpt}
                 if len(chain_list) > self.fold_threshold: await send_fold("private", uid)
                 else: await send_unfold("private", uid)
 
-# === HTML 渲染模板 ===
 TMPL = """
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <style>
-        /* 全局重置 */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: "ChillRoundM", Arial, sans-serif; }
         
         body { 
             background-color: #fff;
-            width: 100%; /* 铺满视口 */
+            width: 100%; 
         }
         
         .card {
@@ -372,7 +365,6 @@ TMPL = """
             flex-direction: column;
         }
 
-        /* 顶部大图容器 */
         .cover-container {
             width: 100%;
             line-height: 0;
@@ -385,7 +377,6 @@ TMPL = """
             display: block;
         }
 
-        /* 内容容器 */
         .content {
             padding: 0 50px 50px 50px;
             flex-grow: 1;
@@ -393,7 +384,6 @@ TMPL = """
             flex-direction: column;
         }
 
-        /* 作者栏 (下方增加分割线) */
         .author-row {
             display: flex;
             align-items: center;
@@ -439,7 +429,7 @@ TMPL = """
             font-weight: bold;
             line-height: 1.25;
             color: #111;
-            margin-bottom: 30px; /* 标题与标签之间的间距 */
+            margin-bottom: 30px;
             word-wrap: break-word;
         }
 
@@ -448,7 +438,7 @@ TMPL = """
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
-            margin-bottom: 40px; /* 标签与摘要之间的间距 */
+            margin-bottom: 40px;
         }
 
         .tag {
@@ -460,7 +450,6 @@ TMPL = """
             font-weight: 500;
         }
 
-        /* 摘要 (下方增加分割线，作为内容主体结束) */
         .excerpt {
             font-size: 38px; 
             line-height: 1.6;
@@ -473,7 +462,6 @@ TMPL = """
             border-bottom: 3px solid #f0f0f0;
         }
 
-        /* 底部信息 */
         .footer {
             display: flex;
             justify-content: space-between;
