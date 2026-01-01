@@ -1,9 +1,12 @@
+import os
 import aiohttp
 from typing import List, Dict
 from astrbot.api import logger
 
 class LvSpider:
     def __init__(self, proxy: str = None):
+        self.proxy = proxy
+        # 80.lv API https://80.lv/api/articles/list
         self.base_api = "https://80.lv/api/articles/list"
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -17,9 +20,13 @@ class LvSpider:
             "limit": total,
             "offset": (page - 1) * total
         }
+
+        use_proxy = self.proxy
+        if not use_proxy:
+            use_proxy = os.getenv("ALL_PROXY") or os.getenv("HTTPS_PROXY") or os.getenv("HTTP_PROXY")        
         
         try:
-            async with session.get(self.base_api, params=params, headers=self.headers) as resp:
+            async with session.get(self.base_api, params=params, headers=self.headers, proxy=use_proxy) as resp:
                 if resp.status != 200:
                     logger.error(f"80.lv API returned {resp.status}")
                     return []

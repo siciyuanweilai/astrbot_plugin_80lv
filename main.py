@@ -15,7 +15,7 @@ from astrbot.api.platform import MessageType
 from .spider import LvSpider
 from .data import save_data, load_data
 
-@register("astrbot_plugin_80lv", "Soulter", "80.lv 文章推送插件", "1.0.0")
+@register("astrbot_plugin_80lv", "四次元未来", "80.lv 文章推送插件", "1.0.0")
 class LvPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -25,6 +25,7 @@ class LvPlugin(Star):
         network_config = config.get("network_config", {})
         self.per_page = network_config.get("per_page", 1) 
         self.network_interval = network_config.get("interval", 2)
+        self.proxy = network_config.get("proxy", None) 
         
         display_config = config.get("display_config", {})
         self.show_thumbnail = display_config.get("show_thumbnail", True)
@@ -45,8 +46,8 @@ class LvPlugin(Star):
         self.filter_exclude = filter_config.get("exclude_keywords", [])
         self.filter_categories = filter_config.get("categories", [])
         self.filter_exclude_categories = filter_config.get("exclude_categories", [])
+        self.spider = LvSpider(proxy=self.proxy)
 
-        self.spider = LvSpider()
         self.is_checking = False
         
         if self.monitor_enabled:
@@ -166,7 +167,7 @@ Excerpt: {clean_excerpt}
                 new_articles = new_articles[:self.per_page]
             
             chain_list = []
-            logger.info(f"检测到 {len(new_articles)} 篇新文章，准备进行翻译和推送...")
+            logger.debug(f"检测到 {len(new_articles)} 篇新文章，准备进行翻译和推送...")
             
             for art in new_articles:
                 original_title = art.get("title", "")
@@ -194,46 +195,41 @@ Excerpt: {clean_excerpt}
         desc = art.get("excerpt", "")
         cats = art.get("categories", [])
         
-        # 排除关键词
+        # 排除关键词 (Title/Excerpt)
         if self.filter_exclude:
             if any(k.lower() in title.lower() or k.lower() in desc.lower() for k in self.filter_exclude):
                 return False
 
-        # 排除分类 - 优先级高
+        # 排除分类 (Exclude Categories) - 优先级高
         if self.filter_exclude_categories:
             config_exclude_set = {str(c).lower().strip() for c in self.filter_exclude_categories if c}
             article_cats_set = {str(c).lower().strip() for c in cats if c}
             
-            # 如果两者有交集（即文章包含任何一个需要排除的分类），则屏蔽
             if config_exclude_set & article_cats_set:
                 return False
         
-        # 包含关键词
-        match_keyword = True
+        # 包含关键词 (Title/Excerpt)
+        match_keyword = True 
         if self.filter_keywords:
             match_keyword = any(k.lower() in title.lower() or k.lower() in desc.lower() for k in self.filter_keywords)
         
-        # 包含分类
-        match_category = True
+        # 包含分类 (Tags)
+        match_category = True 
         if self.filter_categories:
             config_cats_set = {str(c).lower().strip() for c in self.filter_categories if c}
             article_cats_set = {str(c).lower().strip() for c in cats if c}
             if not (config_cats_set & article_cats_set):
                 match_category = False
                 
-        # 如果关键词和分类都设置了，必须同时满足
         if self.filter_keywords and self.filter_categories:
             return match_keyword and match_category
         
-        # 如果只设置了关键词
         if self.filter_keywords:
             return match_keyword
             
-        # 如果只设置了分类
         if self.filter_categories:
             return match_category
 
-        # 如果都没设置，允许通过
         return True
 
     async def _make_msg_chain(self, art: Dict) -> List:
@@ -243,8 +239,6 @@ Excerpt: {clean_excerpt}
         date_str = str(raw_date) 
 
         try:
-            # %d = 日(29), %B = 月份全称(December), %Y = 年(2025)
-            # 解析成功后格式化为: 2025-12-29
             dt = datetime.datetime.strptime(str(raw_date).strip(), "%d %B %Y")
             date_str = dt.strftime("%Y-%m-%d")
         except:
@@ -354,7 +348,7 @@ TMPL = """
         
         body { 
             background-color: #fff;
-            width: 100%; 
+            width: 100%;
         }
         
         .card {
@@ -423,22 +417,20 @@ TMPL = """
             color: #333;
         }
 
-        /* 标题 */
         .title {
             font-size: 60px;
             font-weight: bold;
             line-height: 1.25;
             color: #111;
-            margin-bottom: 30px;
+            margin-bottom: 30px; 
             word-wrap: break-word;
         }
 
-        /* 标签栏  */
         .tags {
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
-            margin-bottom: 40px;
+            margin-bottom: 40px; 
         }
 
         .tag {
