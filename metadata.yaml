@@ -1,6 +1,6 @@
-name: astrbot_plugin_80lv
-display_name: 80lv 提供来自游戏工作室的独家见解
-desc: 80.lv 专业的游戏美术与开发技术资讯推送
-version: v1.0.0
-author: 四次元未来
-repo: https://github.com/siciyuanweilai/astrbot_plugin_80lv
+name: astrbot_plugin_bilibili # 这是你的插件的唯一识别名。
+desc: 哔哩哔哩动态推送、视频信息、直播间信息查询、自然语言番剧推荐插件
+help: 输入 /bili 查看关键词回复帮助。
+version: v1.4.19 # 插件的版本号
+author: "Flartiny & Soulter" # 作者
+repo: https://github.com/Soulter/astrbot_plugin_bilibili # 插件的仓库地址
